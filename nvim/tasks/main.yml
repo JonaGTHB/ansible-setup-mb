@@ -4,6 +4,7 @@
     name: neovim
     state: present
     update_homebrew: yes
+    upgrade: yes
 - name: Ensure nvim directory exists
   ansible.builtin.file:
     path: "~/.config/nvim"

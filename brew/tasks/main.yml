@@ -1,8 +1,13 @@
 ---
+- name: Update Homebrew
+  community.general.homebrew:
+    state: latest
+
 - name: Install Homebrew formulae
   community.general.homebrew:
     name: "{{ item }}"
     state: present
+    upgrade: true 
   loop: "{{ brew_formulae }}"
 
 - name: Install Homebrew casks

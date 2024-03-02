@@ -3,6 +3,7 @@
   community.general.homebrew:
     name: alacritty
     state: present
+    upgrade: true
 
 - name: Ensure Alacritty Configuration Directory Exists
   file:
@@ -19,6 +20,7 @@
   community.general.homebrew:
     name: fish
     state: present
+    upgrade: true
 
 - name: Get current shell
   command: echo $SHELL
