@@ -1,0 +1,180 @@
+- name: Install yabai with Homebrew
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Tap the koekeishiya/formulae repository
+      community.general.homebrew_tap:
+        name: koekeishiya/formulae
+        state: present
+
+    - name: Install yabai from the tapped repository
+      community.general.homebrew:
+        name: yabai
+        state: present
+
+- name: Install skhd with Homebrew
+  gather_facts: false
+  hosts: localhost
+  tasks:
+    - name: Tap the koekeishiya/formulae repository
+      community.general.homebrew_tap:
+        name: koekeishiya/formulae
+        state: present
+
+    - name: Install skhd from the tapped repository
+      community.general.homebrew:
+        name: skhd 
+        state: present
+
+- name: Install applications with Homebrew
+  gather_facts: false
+  hosts: localhost 
+  vars:
+    brew_formulae:
+      - node
+      - nvim
+      - fzf
+      - ripgrep
+      - git
+      - fish
+    brew_casks:
+      - google-chrome
+      - alacritty 
+      - alfred
+      - obsidian
+      - shottr
+      - spotify
+      - orbstack
+  tasks:
+    - name: Install Homebrew formulae
+      community.general.homebrew:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ brew_formulae }}"
+
+    - name: Install Homebrew casks
+      community.general.homebrew_cask:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ brew_casks }}"
+
+
+- name: Install SSH keys locally
+  tags:
+  - ssh
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  tasks:
+    - name: Ensure the .ssh directory exists
+      file:
+        path: "{{ ansible_env.HOME }}/.ssh"
+        state: directory
+        mode: 0700
+    - name: Decrypt SSH private key
+      ansible.builtin.copy:
+        src: "files/ssh/id_rsa"
+        dest: "~/.ssh/id_rsa"
+        mode: '0600'
+        decrypt: yes
+    - name: Decrypt SSH public key
+      ansible.builtin.copy:
+        src: "files/ssh/id_rsa.pub"
+        dest: "~/.ssh/id_rsa.pub"
+        mode: '0600'
+        decrypt: yes
+
+- name: Clone GitHub repository into the local machine
+  tags: 
+  - dotfiles
+  hosts: localhost
+  connection: local
+  gather_facts: false 
+  tasks:
+    - name: Check if the .dotfiles directory already exists
+      ansible.builtin.stat:
+        path: "~/Documents/.dotfiles"
+      register: dotfiles_directory
+
+    - name: Remove the existing .dotfiles directory
+      ansible.builtin.file:
+        path: "~/Documents/.dotfiles"
+        state: absent
+      when: dotfiles_directory.stat.exists
+
+    - name: Clone the GitHub repository into Documents/.dotfiles using SSH
+      ansible.builtin.git:
+        repo: 'git@github.com:JonaGTHB/.dotmacosfiles.git'  
+        dest: "~/Documents/.dotfiles"
+        clone: yes
+        update: yes
+        key_file: "~/.ssh/id_rsa"  
+
+# - name: Symlink dotfiles into .config
+#   hosts: localhost
+#   connection: local
+#   gather_facts: false
+#   tags:
+#   - dotfiles
+#   tasks:
+#     - name: Find all directories in the specified directory
+#       ansible.builtin.find:
+#         paths: "~/Documents/.dotfiles/"
+#         file_type: directory
+#       register: found_dirs
+#
+#     - name: Create symlinks from found directories to .config
+#       ansible.builtin.file:
+#         src: "{{ item.path }}"
+#         dest: "~/.config/{{ item.path | basename }}"
+#         state: link
+#       loop: "{{ found_dirs.files }}"
+
+- name: Start Window Manager and Hotkey Daemon
+  tags: yabai
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Restart yabai
+      changed_when: false
+      ansible.builtin.shell: 
+        cmd: "yabai --restart-service"
+        executable: /bin/zsh
+
+    - name: Restart skhd
+      changed_when: false
+      ansible.builtin.shell: 
+        cmd: "skhd --restart-service"
+        executable: /bin/zsh
+
+- name: Set up fish shell
+  tags: fish
+  hosts: localhost
+  gather_facts: true 
+  become: false
+  vars:
+    the_user: "{{ ansible_env.USER }}"
+  tasks:
+    - name: Set fish as the default shell
+      become: true
+      user:
+        name: "{{ the_user }}"
+        shell: /opt/homebrew/bin/fish
+
+
+- name: "Create .hushlogin file"
+  hosts: localhost
+  gather_facts: false
+  become: false
+  tasks: 
+  - name: Check if .hushlogin exists in the home directory
+    ansible.builtin.stat:
+      path: "{{ ansible_env.HOME }}/.hushlogin"
+    register: hushlogin_stat  
+
+  - name: Create .hushlogin file in the home directory if it does not exist
+    ansible.builtin.file:
+      path: "{{ ansible_env.HOME }}/.hushlogin"
+      state: touch
+    when: not hushlogin_stat.stat.exists  
+

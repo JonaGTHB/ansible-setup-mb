@@ -1,0 +1,7 @@
+---
+- name: Restart yabai & skhd
+  shell: "{{ item }} --restart-service"
+  with_items:
+    - yabai
+    - skhd
+  

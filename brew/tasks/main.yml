@@ -1,0 +1,13 @@
+---
+- name: Install Homebrew formulae
+  community.general.homebrew:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ brew_formulae }}"
+
+- name: Install Homebrew casks
+  community.general.homebrew_cask:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ brew_casks }}"
+

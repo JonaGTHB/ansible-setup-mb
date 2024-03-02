@@ -1,0 +1,22 @@
+---
+- name: Ensure the .ssh directory exists
+  file:
+    path: "{{ ansible_env.HOME }}/.ssh"
+    state: directory
+    mode: 0700
+
+- name: Decrypt SSH private key
+  ansible.builtin.copy:
+    src: "id_rsa"
+    dest: "~/.ssh/id_rsa"
+    mode: '0600'
+    decrypt: true 
+
+
+- name: Decrypt SSH public key
+  ansible.builtin.copy:
+    src: "id_rsa.pub"
+    dest: "~/.ssh/id_rsa.pub"
+    mode: '0644'
+    decrypt: true 
+

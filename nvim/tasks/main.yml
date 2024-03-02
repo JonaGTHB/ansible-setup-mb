@@ -1,0 +1,22 @@
+---
+- name: Install neovim
+  community.general.homebrew:
+    name: neovim
+    state: present
+    update_homebrew: yes
+- name: Ensure nvim directory exists
+  ansible.builtin.file:
+    path: "~/.config/nvim"
+    state: directory
+    mode: '0755'  # Set the appropriate permissions
+
+- name: Clone Neovim config from GitHub
+  ansible.builtin.git:
+    repo: 'git@github.com:JonaGTHB/nvim-ks.git'
+    dest: '~/.config/nvim'
+    update: yes
+    clone: yes
+    force: yes
+    key_file: '~/.ssh/id_rsa'
+
+

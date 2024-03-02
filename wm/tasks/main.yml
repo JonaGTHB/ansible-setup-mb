@@ -1,0 +1,36 @@
+---
+- name: Tap yabai & skhd repository
+  homebrew_tap:
+    name: "{{ item }}"
+  with_items:
+    - koekeishiya/formulae
+  become: false 
+  notify: Restart yabai & skhd 
+
+- name: Install yabai & skhd with brew
+  homebrew:
+    name: "{{ item }}"
+  with_items:
+    - yabai
+    - skhd
+  become: false
+  notify: Restart yabai & skhd 
+
+- name: Ensure yabai & skhd configuration directory exists
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ ansible_env.HOME}}/.config/yabai"
+    - "{{ ansible_env.HOME}}/.config/skhd"
+  notify: Restart yabai & skhd 
+
+- name: Copy yabai & skhd configuration files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: "files/yabairc", dest: "{{ ansible_env.HOME}}/.config/yabai/yabairc" }
+    - { src: "files/skhdrc", dest: "{{ ansible_env.HOME}}/.config/skhd/skhdrc" }
+  notify: Restart yabai & skhd 
+

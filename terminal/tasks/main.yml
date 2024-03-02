@@ -1,0 +1,42 @@
+---
+- name: Install Alacritty Terminal
+  community.general.homebrew:
+    name: alacritty
+    state: present
+
+- name: Ensure Alacritty Configuration Directory Exists
+  file:
+    path: ~/.config/alacritty
+    state: directory
+
+- name: Copy Alacritty Configuration
+  copy:
+    src: alacritty.toml
+    dest: ~/.config/alacritty/alacritty.toml
+    force: yes
+
+- name: Install Fish Shell
+  community.general.homebrew:
+    name: fish
+    state: present
+
+- name: Get current shell
+  command: echo $SHELL
+  changed_when: false
+  register: current_shell
+
+- name: Set Fish as Default Shell
+  shell: chsh -s $(which fish) 
+  when: "'fish' not in current_shell.stdout"
+
+- name: Check if .hushlogin exists in the home directory
+  ansible.builtin.stat:
+    path: "{{ ansible_env.HOME }}/.hushlogin"
+  register: hushlogin_stat  
+
+- name: Ensure .hushlogin exists in the home directory 
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.hushlogin"
+    state: touch
+  when: not hushlogin_stat.stat.exists  
+

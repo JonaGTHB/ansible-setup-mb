@@ -1,0 +1,27 @@
+---
+brew_formulae:
+  - node
+  - nvim
+  - fzf
+  - ripgrep
+  - git
+  - fish
+  - bitwarden-cli
+  - just
+  - zoxide
+  - tldr
+  - tmux
+  - make
+brew_casks:
+  - google-chrome
+  - alacritty
+  - alfred
+  - obsidian
+  - shottr
+  - spotify
+  - orbstack
+  - keycastr
+  - firefox
+  - bitwarden
+  - discord
+  - intellij-idea
